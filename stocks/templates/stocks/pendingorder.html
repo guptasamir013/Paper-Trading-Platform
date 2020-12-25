@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title></title>
+  </head>
+  <body>
+    <ul>
+      {% for order in pendinglist %}
+        <li>Stock : <a href="{% url 'stocks-stock' id=order.stock.id %}">{{ order.stock.name }}</a> | Open Price : {{order.open_price}} | Volume : {{order.volume}}
+          <p class="current_price_{{order.stock.name}}">Price : </p>
+          <form action="{% url 'stocks-closeposition' id=order.id %}" method="post">
+            {% csrf_token %}
+            <input type="text" name="current_price" value="" class="current_price_hidden_{{order.stock.name}}" hidden>
+            <button type="submit" name="button">Close</button>
+          </form>
+        </li>
+      {% endfor %}
+    </ul>
+
+    <script type='text/javascript' src='https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js'></script>
+    <script type='text/javascript'>
+
+      //console.log(x)
+
+      // setInterval(repo, 100000*15)
+      // function repo(){
+      //   {% for order in pendinglist %}
+      //     $.get("https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol="+ x +"&apikey=BUQDW4TRTJ64VS53", function(data, status){
+      //       $(".current_price_" + x).text(function(){return "Price: " + data["Global Quote"]["05. price"]});
+      //       $(".current_price_hidden_" + x).val(data["Global Quote"]["05. price"]);
+      //     });
+      //   {% endfor %}
+      // }
+      // repo()
+
+      const socket = new WebSocket('wss://ws.finnhub.io?token=bv1tuh748v6o5ed6g71g');
+
+      // Connection opened -> Subscribe
+      socket.addEventListener('open', function (event) {
+        {% for order in pendinglist %}
+          var x = '{{ order.stock.name }}'
+          socket.send(JSON.stringify({'type':'subscribe', 'symbol': x}))
+        {% endfor %}
+          // socket.send(JSON.stringify({'type':'subscribe', 'symbol': 'BINANCE:BTCUSDT'}))
+          // socket.send(JSON.stringify({'type':'subscribe', 'symbol': 'IC MARKETS:1'}))
+      });
+
+      // Listen for messages
+      socket.addEventListener('message', function (event) {
+
+          const data = JSON.parse(event.data)["data"][0]
+          const dateObj = new Date(data["t"] * 1000);
+          const utcString = dateObj.toUTCString();
+          const time = utcString//.slice(-11, -4);
+          var x = data["s"]
+
+          console.log('Message from server ', data);
+          $(".current_price_" + x).text(function(){return "Price: " + data["p"]});
+          $(".current_price_hidden_" + x).val(data["p"]);
+      });
+
+      // Unsubscribe
+       var unsubscribe = function(symbol) {
+          socket.send(JSON.stringify({'type':'unsubscribe','symbol': symbol}))
+      }
+
+
+    </script>
+
+  </body>
+</html>

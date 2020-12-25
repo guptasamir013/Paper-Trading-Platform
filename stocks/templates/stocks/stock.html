@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title></title>
+  </head>
+  <body>
+    <h3>Name : {{stock.name}}</h3>
+    <h5 id="current_price">Price : </h5>
+    <p id="prediction"> Prediction : </p>
+
+    <form action="" method="post">
+      {% csrf_token %}
+      <input type="text" name="volume" value="">
+      <input type="text" name="current_price" value="" hidden id="current_price_hidden">
+      <button type="submit" name="buy">Buy</button>
+      <button type="submit" name="sell">Sell</button>
+    </form>
+
+    <script type='text/javascript' src='https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js'></script>
+    <script type='text/javascript'>
+
+      var x = '{{ stock.name }}'
+      console.log(x)
+
+      // setInterval(repo, 1000*15)
+      // function repo(){
+      //   $.get("https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol="+ x +"&apikey=BUQDW4TRTJ64VS53", function(data, status){
+      //     $("#current_price").text(function(){return "Price: " + data["Global Quote"]["05. price"]});
+      //     $("#current_price_hidden").val(data["Global Quote"]["05. price"]);
+      //
+      //     $.ajax({
+      //         type: "GET",
+      //         url: "{% url 'stocks-jqueryserver' id=stock.id %}",
+      //        success: function(data){
+      //              $("#prediction").text(function(){return "Prediction: " + data});
+      //          }
+      //     });
+      //
+      //   });
+      // }
+      // repo()
+
+      const socket = new WebSocket('wss://ws.finnhub.io?token=bv1tuh748v6o5ed6g71g');
+
+      // Connection opened -> Subscribe
+      socket.addEventListener('open', function (event) {
+          socket.send(JSON.stringify({'type':'subscribe', 'symbol': x}))
+          // socket.send(JSON.stringify({'type':'subscribe', 'symbol': 'BINANCE:BTCUSDT'}))
+          // socket.send(JSON.stringify({'type':'subscribe', 'symbol': 'IC MARKETS:1'}))
+      });
+
+      // Listen for messages
+      socket.addEventListener('message', function (event) {
+
+          const data = JSON.parse(event.data)["data"][0]
+          const dateObj = new Date(data["t"] * 1000);
+          const utcString = dateObj.toUTCString();
+          const time = utcString//.slice(-11, -4);
+
+          console.log('Message from server ', data);
+          $("#current_price").text(function(){return ("Price: " + data["p"] + " Time: " + time)});
+          $("#current_price_hidden").val(data["p"]);
+
+          $.ajax({
+                  type: "GET",
+                  url: "{% url 'stocks-jqueryserver' id=stock.id %}",
+                  success: function(data){
+                       $("#prediction").text(function(){return "Prediction: " + data});
+                   }
+              });
+      });
+
+      // Unsubscribe
+       var unsubscribe = function(symbol) {
+          socket.send(JSON.stringify({'type':'unsubscribe','symbol': symbol}))
+      }
+    </script>
+
+  </body>
+</html>

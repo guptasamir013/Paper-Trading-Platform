@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title></title>
+  </head>
+  <body>
+    <ul>
+      {% for order in executedlist %}
+        <li>Stock : <a href="{% url 'stocks-stock' id=order.stock.id %}">{{order.stock.name}}</a> | Open Price : {{order.open_price}} | Close Price : {{order.close_price}} | Volume : {{order.volume}} | Type : {{ order.type }}</li>
+      {% endfor %}
+    </ul>
+  </body>
+</html>

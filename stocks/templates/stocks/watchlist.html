@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title></title>
+  </head>
+  <body>
+    <ul>
+      {% for watch in watchlist %}
+        <li><a href="{% url 'stocks-watchliststock' id=watch.id %}" >{{watch.name}}</a></li>
+      {% endfor %}
+    </ul>
+    <form method="POST" action="">
+      {% csrf_token %}
+      {{ form.as_p }}
+      <input type="submit" name="" value="submit">
+    </form>
+  </body>
+</html>
