@@ -18,3 +18,8 @@
 7. Login: user/login/
 8. Logout: user/logout/
 9. Profile: user/profile/
+
+## Description
+- The Web Application allows the authenticated user to paper trade on live stock data obtained using web sockets
+- The authenticated user can maintain (create; update; delete) his/her personal watchlists to keep track of certain stocks
+- Django Framework is used both for Frontend and Backend development with PostgreSQL DB for storing Django-Models
